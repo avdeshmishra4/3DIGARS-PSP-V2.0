@@ -1,0 +1,14 @@
+#Configuration file
+
+
+#Provide "yes" if you want to run pssm else provide "no". Then provide the pssm script file name. e.ge. yes, runPSSM
+$run_pssm = yes, runPSSM
+
+# Provide the secondary structure prediction (SSP) software to be used. Note, the SSP software should provide phi and psi angles in its output.
+# multiple SSP can be provided by separating them using (:) e.g. spinex, runSpineX : tangle, run_tangle. Here the value after comma (,) is the name of the script file
+# software1_name, software1_script : software2_name, software2_script
+$ssp_software1 = spinex, runSpineX
+$ssp_software2 = spiders, runSpider
+
+
+

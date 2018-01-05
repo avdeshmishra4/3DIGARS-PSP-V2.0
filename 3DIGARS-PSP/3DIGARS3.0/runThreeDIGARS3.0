@@ -1,0 +1,7 @@
+#!/bin/sh
+#purpose: run 3DIGARS3.0
+#author: Avdesh
+
+cd ../3DIGARS3.0/
+javac *.java
+java ThreeDIGARSVersionThree 1NYC_1_0_19 F > output_1_0_19.txt

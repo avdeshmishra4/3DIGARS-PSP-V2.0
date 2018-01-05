@@ -1,0 +1,14 @@
+#!/bin/sh
+#purpose: run 3DIGARS3.0
+#author: Avdesh
+
+cd ../3DIGARS3.0/
+java ThreeDIGARSVersionThree T0469_0_300_204 F > output_0_300_204.txt
+cd ./o3DIGARSEgy/codes/
+./main.exe T0469 0 300 204 F
+cd ../../DSSP/
+rm -f T0469_0_300_204.dssp
+cd ../FEATURES/
+rm -f T0469_0_300_204.rsa
+cd ../ConsolidatedASA/
+rm -f T0469_0_300_204.rpASA

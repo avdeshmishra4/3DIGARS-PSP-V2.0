@@ -1,0 +1,6 @@
+#!/bin/sh
+#purpose: run oscar-star2
+#author: Avdesh
+
+cd ../oscar-star2/
+./oscar-star ../3DIGARS3.0/Input/pdbInput/T0469_0_300_204_bb.pdb

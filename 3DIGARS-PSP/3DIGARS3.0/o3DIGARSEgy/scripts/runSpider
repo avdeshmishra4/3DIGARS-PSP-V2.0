@@ -1,0 +1,30 @@
+#!/bin/sh
+#purpose: run Spiders
+#author: Avdesh
+
+input_path="../../../input";
+fasta="../../../input/fasta";
+pssm_output_file_path="../../../pssmout";
+
+for id in `cat $input_path/pdbList.txt`;
+do 
+	#===========================================================================================================
+	#Run Spiders to generate Phi and Psi
+	
+	if [ -f ../SPIDER2_localout/$id.spd3 ];
+	then
+		printf "Spider2 output already exists!!\n";
+	else	
+		printf "running Spiders...\n";
+	#	cp $fasta/$id.fasta ../SPIDER2_local_v1/ex/$id.seq;
+		cp $pssm_output_file_path/$id.mat ../SPIDER2_local_v1/ex/$id.pssm;
+	#	cp ../SPIDER2_local_v1/ex/$id.fasta ../SPIDER2_local_v1/ex/$id.seq;
+		cd ../SPIDER2_local_v1/ex/;
+		../misc/pred_pssm.py $id.pssm;
+		cp $id.spd3 ../../SPIDER2_localout/;
+	#	rm *.spd3;
+		printf "...DONE!!!\n";
+	fi
+
+	#===========================================================================================================
+done

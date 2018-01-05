@@ -1,0 +1,59 @@
+REGAd3p
+==========
+REGAd3p is a predictor of absolute accessible surface area of residues 
+in protein. The predictor is  based on regularized exact regression 
+method using 3rd order polynomial as kernel and  with genetic algorithm 
+optimization of weights. It takes protein sequence (standard FASTA format) 
+as input and outputs per residue predicted ASA values. This software 
+also predicts secondary structure internally to use the probabilities
+of three types of secondary structure (helix, coil and beta). We also 
+report the result of secondary structure prediction.
+
+By Sumaiya Iqbal and Md Tamjidul Hoque, January, 2015
+
+Contact:
+	thoque@uno.edu
+	siqbal1@my.uno.edu (anni.are@gmail.com)
+	
+Availability
+============
+REGAd3p is available at:
+http://cs.uno.edu/~tamjid/Software.html
+
+Quick Run Guide
+===============
+
+1) SET input
+	- Redirect into REGAd3p/Software/Input
+	- Follow the instructions in "ReadMe_Input.txt" to complete "id_list.txt"
+	
+2) SET path variables within script 'run_REGAd3p'
+	- Redirect into REGAd3p/Software/Scripts
+	- SET path of PSI-BLAST (BLAST/bin) and NR database
+	- SET path of IUPred source codes (given within the software in AdditionalFiles directory)
+	- SET path of libSVM installation directory 
+	
+3) Run prediction
+	- Redirect into REGAd3p/Software/Scripts	
+	- Execute 'run_REGAd3p'
+		- ./run_REGAd3p (SET the permission if required)
+	- Prediction outputs of secondary structure will be at "Output/prediction/$id/SS"
+		- 'id.SSp'
+	- Prediction outputs of ASA will be at "Output/prediction/$id/ASA"
+		- 'id.ASAp'		
+For detail description of Software, users are requested to read 'ReadMe' in 'REGAd3p' package.
+		
+Thanks!!
+ENJOY!!		
+
+
+
+
+
+
+
+
+
+
+
+

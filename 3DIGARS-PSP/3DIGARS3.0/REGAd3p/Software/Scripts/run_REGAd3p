@@ -1,0 +1,198 @@
+#!/bin/sh
+#purpose: run REGAd3p 
+#author: Sumaiya Iqbal
+
+export IUPred_PATH=../AdditionalFiles/iupred
+
+psiblast_path="/home1/presentation/DBase/BLAST/ncbi-blast-2.2.28+/bin";
+nr_database_path="/home1/presentation/DBase/BLAST/ncbi-blast-2.2.28+/bin/nr/nr";
+iupred_path="../AdditionalFiles/iupred";
+libsvm_path="/home1/presentation/Courses/CSCI_6635_Research/Lecture/Set_5_SVM/LibSVM/libsvm-3.17/libsvm-3.17";
+
+input_path="../../../Input";
+source_code_path="../Codes";
+query_sequence_path="../Features";
+pssm_output_file_path="../Features";
+sequence="../Features";
+
+printf "\n-------------- REGAd3p Start------------------\n";
+for file in `cat $input_path/id_list_regad3p.txt` ;
+do 
+	rm -r -f ../Features/$file$1;
+	rm -r -f ../Output/prediction/$file$1;
+	printf "\nID: "$file$1;
+	printf "\n";
+	printf "copying fasta from 3DIGARS3.0 energy function to REGAd3p/Softwares/Input/\n";
+	cp -f $input_path/FASTA/$file.fasta ../Input/FASTA/;
+	
+	#===========================================================================================================
+	# check and process input
+	
+	if [ -f ../Input/FASTA/$file.fasta ];
+	then
+		if [ -f ../Features/$file$1/$file.fasta ];
+		then
+			printf "Directory and fasta file already exists!!\n";
+		else	
+			cd $source_code_path;
+			g++ -o start$1 processInput.cpp;
+			./start$1 $file $1;
+			printf "processing Input...";
+			printf "...DONE!!!\n";
+			rm -f start$1;
+		fi	
+	else
+		printf "Error --- FASTA file not found in Input/FASTA directory!!!\n";
+		exit 1;
+	fi	
+	#===========================================================================================================
+	
+	printf "copying pssm from /pssmout/ to REGAd3p/Softwares/Features/\n";
+	cp -f ../../../../pssmout/$file.mat ../Features/$file$1/;
+	cp -f ../Features/$file$1/$file.mat ../Features/$file$1/$file.pssm;
+	
+	#===========================================================================================================
+	#Run PSI-BLAST to generate PSSM
+	
+	cd ../Scripts/
+	if [ -f ../Features/$file$1/$file.pssm ];
+	then
+		printf "PSSM already exists!!\n";
+	else
+		printf "running PSI-BLAST...";
+		$psiblast_path/psiblast -query $query_sequence_path/$file/$file.fasta -db $nr_database_path -out $pssm_output_file_path/$file/$file.out -num_iterations 3 -num_threads 16 -out_ascii_pssm $pssm_output_file_path/$file/$file.pssm > ../Output/log/log_PSSM.txt;
+		printf "...DONE!!!\n";	
+	fi	
+	#===========================================================================================================
+	
+	#===========================================================================================================
+	#Run IUPred (short & long)
+	if [ -f ../Features/$file$1/$file.iupredS ] && [ -f ../Features/$file$1/$file.iupredL ];
+	then
+		printf "IUPred short & long already exists!!\n";
+	else
+		printf "running IUPred (short & long)...";
+		cc $iupred_path/iupred.c -o $iupred_path/iupred$1;
+		$iupred_path/iupred$1 $sequence/$file$1/$file.fasta short > $sequence/$file$1/$file.iupredS;
+		$iupred_path/iupred$1 $sequence/$file$1/$file.fasta long > $sequence/$file$1/$file.iupredL;
+		rm -f $iupred_path/iupred$1;
+		printf "...DONE!!!\n";
+	fi	
+	#===========================================================================================================
+	
+	#===========================================================================================================
+	#Run Monogram, Bigram computation
+	if [ -f ../Features/$file$1/$file.monogram ] && [ -f ../Features/$file$1/$file.bigram ];
+	then
+		printf "Monorgam & Bigram exists!!\n";
+	else
+		cd $source_code_path;
+		printf "generating monogram and bigram...";
+		g++ -o mg_bg$1 computeMG_BG.cpp
+		./mg_bg$1 $file $1
+		printf "...DONE!!!\n";
+		rm -f mg_bg$1;
+	fi	
+	#===========================================================================================================
+	
+	#===========================================================================================================
+	#Gather 52 features for SS prediction
+	cd $source_code_path;
+	printf "collecting features for SS prediction...";
+	g++ -o ssf$1 collectFeatures_SS.cpp
+	./ssf$1 $file $1
+	printf "...DONE!!!\n";
+	rm -f ssf$1;
+	#===========================================================================================================
+	
+	#===========================================================================================================
+	#apply windowing and prepare final input for initial SS prediction by lbsvm
+	cd $source_code_path;
+	printf "generating input for SS prediction...";
+	g++ -o inputss$1 prepareInput_SS.cpp
+	./inputss$1 $file $1
+	printf "...DONE!!!\n";
+	rm -f inputss$1;
+	#===========================================================================================================
+	
+	#===========================================================================================================
+	#predict secondary structure and process output
+	cd $source_code_path;
+	if [ -f ../Output/prediction/$file$1/SS/$file.SSp ];
+	then
+		printf "Predicted Secondary structure output already exists!!\n";
+	else
+		mkdir ../Output/prediction/$file$1;
+		mkdir ../Output/prediction/$file$1/SS;
+		printf "predicting secondary structure and processing output...";
+		g++ -o predictss$1 predictSS_processOutput.cpp
+		./predictss$1 $file $1 $libsvm_path
+		printf "...DONE!!!\n";
+		rm -f predictss$1;
+	fi	
+	#===========================================================================================================
+	
+	#===========================================================================================================
+	#Gather 55 features for ASA prediction
+	cd $source_code_path;
+	printf "collecting features for ASA prediction...";
+	g++ -o asaf$1 collectFeatures_ASA.cpp
+	./asaf$1 $file $1
+	printf "...DONE!!!\n";
+	rm -f asaf$1;
+	#===========================================================================================================
+	
+	#===========================================================================================================
+	#Prepare exact input for ASA prediction
+	cd $source_code_path;
+	printf "generating input for ASA prediction...";
+	g++ -o inputasa$1 prepareInput_ASA.cpp
+	./inputasa$1 $file $1
+	printf "...DONE!!!\n";
+	rm -f inputasa$1;
+	#===========================================================================================================
+	
+	#===========================================================================================================
+	# Predict ASA
+	cd $source_code_path;
+	mkdir ../Output/prediction/$file$1/ASA;
+	printf "predicting ASA...";
+	g++ -o predictasa$1 predictASA_processOutput.cpp
+	./predictasa$1 $file $1
+	printf "...DONE!!!\n";
+	rm -f predictasa$1;
+	#===========================================================================================================
+	
+done
+printf "\n-------------- REGAd3p End------------------\n";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
